@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>ES6 todolist</title>
+    <style>
+        body {
+            margin: 0;
+        }
+
+        ul {
+            padding: 0;
+            margin: 0;
+            list-style: none;
+        }
+
+        .header {
+            height: 60px;
+            background-color: #f0f0f0;
+        }
+
+        .header ul {
+            height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .header ul li {
+            flex-grow: 1;
+            height: 40px;
+            line-height: 40px;
+            text-align: center;
+        }
+
+        .search {
+            height: 40px;
+            background-color: #ccc;
+            padding: 10px 50px;
+        }
+
+        .search input {
+            width: 100%;
+            height: 40px;
+            border-radius: 20px;
+            box-sizing: border-box;
+            outline: none;
+            border: 2px solid #fff;
+            padding: 0 0 0 20px;
+        }
+
+        .search input:focus {
+            border: 2px solid #f50;
+        }
+
+        .list {
+            padding: 0 50px;
+        }
+
+        .list ul li {
+            height: 40px;
+            line-height: 40px;
+            border-bottom: 2px dashed #ccc;
+            margin-bottom: 10px;
+        }
+
+        .list ul li input[type="checkbox"] {
+            vertical-align: middle;
+            width: 26px;
+            height: 26px;
+        }
+
+        .list ul li button {
+            float: right;
+            height: 30px;
+            margin: 5px 10px;
+            cursor: pointer;
+            outline: none;
+            border: 0;
+        }
+
+        .list ul li button:hover {
+            background-color: #f00;
+            color: #fff;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="wrapper">
+        <div class="header">
+            <ul id="statusList">
+                <li>任务总数【<span>0</span>】</li>
+                <li>进行中【<span>0</span>】</li>
+                <li>已完成【<span>0</span>】</li>
+            </ul>
+        </div>
+        <div class="search">
+            <input id="inp" type="text" placeholder="请输入任务">
+        </div>
+        <div class="list">
+            <ul id="listBox">
+            </ul>
+        </div>
+    </div>
+
+
+    <script>
+        function Page(option){
+            this.statusList = option.data.statusList;
+            this.inpEl = option.data.inpEl;
+            this.listBox = option.data.listBox;
+            this.doingCount = 0;
+            this.doneCount = 0;
+            this.tatolCount = 0;
+        }
+
+        Page.prototype.init = function() {
+            // 统一调用方法
+            this.inputEvent();
+            this.taskIsCheck();
+            this.removeTask();
+        }
+
+
+        Page.prototype.inputEvent = function() {
+            this.inpEl.onkeydown = event => {
+                if(event.keyCode === 13){
+                    let v1 = this.inpEl.value;
+                    if(v1.length == 0){
+                        alert("请输入任务");
+                        return;
+                    }
+                    // 匹配中文的正则表达式
+                    if(/[\u4e00-\u9fa5]/g.test(v1)){
+                        // 调用渲染数据的方法
+                        this.template(v1);
+                        this.inpEl.value = "";
+                        this.taskCount();
+                    }else {
+                        console.log("输入错误");
+                    }
+                }
+            }
+        }
+
+        Page.prototype.template = function(v1) {
+            let liCreate = document.createElement("li");
+            let str = `
+                <input type="checkbox" data-role="input">
+                    <span >${v1}</span>
+                <button data-role="button" data-index="">删除</button>
+            `
+            
+            liCreate.innerHTML = str;
+            this.listBox.appendChild(liCreate);
+        }
+
+        Page.prototype.taskCount = function() {
+            let elements = this.statusList.querySelectorAll("span");
+            this.tatolCount = this.listBox.children.length;
+            elements[0].innerText = this.tatolCount;
+
+            // 获取相关的复选框标签
+            let checkboxs = this.listBox.querySelectorAll("input[type='checkbox']");
+            let num1 = 0;
+            let num2 = 0;
+            [...checkboxs].forEach((item,index)=>{
+                if(item.checked){
+                    num1 ++;
+                }else {
+                    num2 ++;
+                }
+            })
+            this.doneCount = num1;
+            this.doingCount = num2;
+
+            elements[1].innerText = this.doingCount;
+            elements[2].innerText = this.doneCount;
+        }
+
+        Page.prototype.taskIsCheck = function() {
+            this.listBox.addEventListener("click",event => {
+                this.taskCount();
+            })
+        }
+
+        Page.prototype.removeTask = function() {
+            this.listBox.addEventListener("click",event => {
+                let element = event.target;
+                if(element.dataset.role === "button"){
+                    let flag = element.parentElement.querySelector("input").checked;
+                    if(flag){
+                        element.parentElement.remove();
+                        this.taskCount();
+                    }
+                }
+            })
+        }
+
+        // 实例对象
+        let p1 = new Page({
+            data: {
+                statusList: document.querySelector("#statusList"),
+                inpEl: document.querySelector("#inp"),
+                listBox: document.querySelector("#listBox")
+            }
+        });
+
+        // 调用初始化方法
+        p1.init();
+
+    </script>
+</body>
+
+</html>

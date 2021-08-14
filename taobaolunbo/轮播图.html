@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+        }
+        img{
+            vertical-align: bottom;
+        }
+        li{
+            list-style:none;
+        }
+        .banner{
+            width: 1125px;
+            height: 352px;
+            margin: 100px auto;
+            position: relative;
+            overflow: hidden;
+        }
+        .banner .banner_imgs{
+            width: 1125px;
+            height: 352px;
+        }
+        .banner .banner_imgs ul{
+            width: 700%;
+            position: absolute;
+        }
+        .banner .banner_imgs ul li{
+            width: 1125px;
+            height: 352px;
+            float: left;
+        }
+        .banner .arrow_left,.banner .arrow_right{
+            position: absolute;
+            top: 50%;
+            margin-top: -15px;
+            width: 30px;
+            height: 50px;
+            text-align: center;
+            background: orange;
+            color:white;
+            line-height: 50px;
+            font-size:30px;
+            font-family: "宋体";
+            cursor: pointer;
+        }
+        .banner .arrow_left{
+            left: 0;
+        }
+        .banner .arrow_right{
+            right: 0;
+        }
+        .banner .dot {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            margin-left: -45px;
+        }
+        .banner .dot ol{
+            overflow: hidden;
+        }
+        .banner .dot ol li{
+            width: 10px;
+            height: 10px;
+            background: #000;
+            border-radius: 50%;
+            float: left;
+            margin-right: 8px;
+            cursor: pointer;
+        }
+        .banner .dot ol li.active{
+            background: orange;
+        }
+    </style>
+</head>
+<body>
+    <div class="banner">
+        <!-- 轮播图图片层 -->
+        <div class="banner_imgs">
+            <ul>
+                <li><a href="#"><img src="images/05.jpg"/></a></li>
+                <li><a href="#"><img src="images/01.jpg"/></a></li>
+                <li><a href="#"><img src="images/02.jpg"/></a></li>
+                <li><a href="#"><img src="images/03.jpg"/></a></li>
+                <li><a href="#"><img src="images/04.jpg"/></a></li>
+                <li><a href="#"><img src="images/05.jpg"/></a></li>
+                <li><a href="#"><img src="images/01.jpg"/></a></li>
+            </ul>
+        </div>
+
+        <!-- 左右箭头 -->
+        <span class="arrow_left">&lt;</span>
+        <span class="arrow_right">&gt;</span>
+
+        <!-- 指示器(分页器) -->
+        <div class="dot">
+            <ol>
+                <li class="active"></li>
+                <li></li>
+                <li></li>
+                <li></li>
+                <li></li>
+            </ol>
+        </div>
+    </div>
+
+    <script src="js/animate.js"></script>
+    <script>
+        
+        var num = 1;
+        var banner = document.querySelector(".banner");
+        var bannerWidth = parseInt( getStyle( banner, "width" ) );
+        var bannerImgsUl = document.querySelector(".banner .banner_imgs ul");
+        bannerImgsUl.style.left = -bannerWidth*num + "px";
+
+        // 点击右侧按钮,小圆圈跟随变化
+        // 定义一个全局变量 circleIndex保存当前高亮的小圆点
+        var circleIndex = 0;
+        // 获取所有小圆点
+        var dotLis = document.querySelectorAll(".dot ol li");
+
+        // 定义一个变量flag节流阀(开关灯)
+        var flag = true;
+
+        // 点击右侧按钮一次，就让图片滚动一张
+        var arrow_right = document.querySelector(".arrow_right");
+        arrow_right.onclick = function(){
+            if( flag ){// 判断节流阀的状态
+                flag = false;// 关闭节流阀
+                num++;
+                circleIndex++;
+
+                for(var i = 0; i < dotLis.length; i++ ){
+                    dotLis[i].classList.remove("active");
+                }
+                // 小圆点边界判断
+                if( circleIndex == 5 ){
+                    circleIndex = 0;
+                }
+                // 高亮指定项
+                dotLis[circleIndex].classList.add("active");
+
+                // 动画改变left属性值
+                animate( bannerImgsUl , {
+                    "left" : -bannerWidth*num
+                } , function(){
+                    if( num == 6 ){// num边界判断,判断num是否为6
+                        num = 1;
+                        bannerImgsUl.style.left = -bannerWidth*num + "px";
+                    }
+
+                    // 重新打开节流阀
+                    flag = true;
+                })
+
+            }
+        }
+
+        // 实现左侧按钮功能
+        var arrow_left = document.querySelector(".arrow_left");
+        arrow_left.onclick = function(){
+            if( flag ){
+                flag = false;
+                num--;
+                circleIndex--;
+                for(var i = 0; i < dotLis.length; i++ ){
+                    dotLis[i].classList.remove("active");
+                }
+                if( circleIndex == -1 ){
+                    circleIndex = dotLis.length-1;
+                }
+                dotLis[circleIndex].classList.add("active");
+                animate( bannerImgsUl , {
+                    "left" : -bannerWidth*num
+                } , function(){
+                    if( num == 0 ){
+                        num = 5;
+                        bannerImgsUl.style.left = -bannerWidth*num + "px";
+                    }
+
+                    flag = true;
+                })
+            }
+        }
+
+        // 被点击小圆圈高亮,并且滚动到对应图片
+        for( var j = 0; j < dotLis.length; j++ ){
+            dotLis[j].setAttribute("data-index", j+1 );
+            dotLis[j].onclick = function(){
+                for(var i = 0; i < dotLis.length; i++ ){
+                    dotLis[i].classList.remove("active");
+                }
+                this.classList.add("active");
+                var currentLiIndex = this.getAttribute("data-index");
+                circleIndex = currentLiIndex-1;
+                num = currentLiIndex;
+                animate( bannerImgsUl , {
+                    "left" : -bannerWidth*num
+                })
+
+            }
+        }
+
+        // 自动播放功能
+        var timer = null;
+        timer = setInterval( function(){
+            arrow_right.click();
+        }, 2000 );
+
+        banner.onmouseover = function(){
+            window.clearInterval( timer );
+            timer = null;
+        }
+
+        banner.onmouseout = function(){
+            if( timer == null ){
+                timer = setInterval( function(){
+                    arrow_right.click();
+                }, 2000 );
+            }
+        }
+        
+    </script>
+</body>
+</html>

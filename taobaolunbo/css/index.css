@@ -1,0 +1,49 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+li {
+  list-style: none;
+}
+img {
+  vertical-align: bottom;
+}
+.banner {
+  position: relative;
+  overflow: hidden;
+}
+.banner .banner_img {
+  width: 700vw;
+}
+.banner .banner_img ul {
+  display: flex;
+}
+.banner .banner_img ul li {
+  width: 100vw;
+}
+.banner .banner_img ul li img {
+  width: 100%;
+}
+.banner .banner_dot {
+  position: absolute;
+  left: 50%;
+  bottom: 10px;
+  transform: translateX(-50%);
+}
+.banner .banner_dot ol {
+  display: flex;
+}
+.banner .banner_dot ol li {
+  width: 8px;
+  height: 8px;
+  margin-right: 5px;
+  background: rgba(0, 0, 0, 0.8);
+  border-radius: 50%;
+  display: inline-block;
+}
+.banner .banner_dot ol li:last-child {
+  margin-right: 0;
+}
+.banner .banner_dot ol li.active {
+  background: #ff5000;
+}

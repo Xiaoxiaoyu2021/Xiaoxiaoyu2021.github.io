@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>弹幕</title>
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+        }
+        img{
+            vertical-align: bottom;
+        }
+        input{
+            outline:none;
+            border:none;
+        }
+        li{
+            list-style:none;
+        }
+        .box{
+            width: 800px;
+            margin:20px auto;
+            position: relative;
+        }
+        .box .danmu_box{
+            width: 800px;
+            height: 450px;
+            position: relative;
+            overflow: hidden;
+        }
+        .box .danmu_box .danmu{
+            position: absolute;
+            left: 800px;
+            top: 0;
+            color:red;
+            /* 强制一行显示内容 */
+            white-space: nowrap;
+            transition: left 5s linear;
+        }
+        .box .bgImg{
+            width: 800px;
+        }
+        .box .face_box{
+            width: 395px;
+            height: 125px;
+            background: white;
+            border:1px solid gray;
+            position: absolute;
+            right: 0px;
+            bottom: 40px;
+            z-index:10;
+            display: none;
+        }
+        .box .face_box ul{
+            overflow:hidden;
+        }
+        .box .face_box ul li{
+            float: left;
+            margin-left: 2px;
+            margin-top: 1px;
+        }
+        .box .send_box{
+            width: 760px;
+            padding: 10px 20px;
+            height: 30px;
+            box-shadow: 0 0 4px rgba( 0,0,0,0.5);
+            position: relative;
+        }
+        .box .send_box .contentInp{
+            width: 700px;
+            background: #f4f4f4;
+            height: 30px;
+            line-height: 30px;
+            text-indent:1em;
+            border:1px solid #ededed;
+            box-sizing: border-box;
+            float: left;
+        }
+        .box .send_box .btn_send{
+            width: 60px;
+            height: 30px;
+            text-align: center;
+            line-height: 30px;
+            color:white;
+            background: #00a1d6;
+            float: left;
+            font-size:14px;
+            cursor: pointer;
+        }
+        .box .send_box .face_icon{
+            position: absolute;
+            right: 90px;
+            top: 15px;
+            width: 20px;
+            height: 20px;
+            background:url(images/biaoqing.png);
+            background-size:100% 100%;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <div class="danmu_box">
+            <img src="images/bg.jpg" class="bgImg"/>
+        </div>
+        
+        <!-- 表情面板 -->
+        <div class="face_box">
+            <ul>
+            </ul>
+        </div>
+        
+        <!-- 发送弹幕盒子 -->
+        <div class="send_box">
+            <input type="text" class="contentInp" placeholder="发个弹幕见证当下">
+            <span class="btn_send">发送</span>
+            <span class="face_icon"></span>
+        </div>
+
+    </div>
+
+    <script>
+        function getStyle( obj , attr ){
+            if( window.getComputedStyle ){
+                return window.getComputedStyle( obj, null )[attr];
+            }else{
+                return obj.currentStyle[attr];
+            }
+        }
+
+        // 获取指定范围的随机整数
+        function getRandom( min, max ){
+            return Math.floor( Math.random()*(max-min+1)+min );
+        }
+
+        function replace_em(str){
+            str = str.replace(/\[em_([0-9]*)\]/g,'<img src="images/$1.gif"/>');
+            return str;
+        }
+
+
+        var btn_send = document.querySelector(".btn_send");
+        var contentInp = document.querySelector(".contentInp");
+        var danmu_box = document.querySelector(".danmu_box");
+
+        var danmuBoxHeight = parseInt( getStyle( danmu_box , "height") );
+                
+
+        // 点击发送按钮,可以发送弹幕
+        btn_send.onclick = function(){
+            // 获取文本框内容
+            var contentVal = contentInp.value;
+            if( contentVal == "" ){
+                alert("请输入弹幕内容");
+                return;
+            }
+
+            // 创建弹幕(创建span标签,并且这个span标签具有.danmu类)
+            var newSpan = document.createElement("span");
+            newSpan.className = "danmu";
+            newSpan.innerHTML = replace_em( contentVal );
+            danmu_box.appendChild( newSpan );
+            var newSpanHeight = parseFloat( getStyle( newSpan , "height") );
+            var newSpanWidth = parseFloat( getStyle( newSpan , "width") );
+
+            // 设置随机top值
+            newSpan.style.top = getRandom(0, danmuBoxHeight -newSpanHeight ) + "px";
+            // 设置left值
+            newSpan.style.left = -newSpanWidth+"px";
+
+            newSpan.ontransitionend = function(){
+                this.remove();
+            }
+
+            contentInp.value = "";
+        }
+
+        // 动态生成表情
+        var faceBoxUl = document.querySelector(".face_box ul");
+
+        var htmlStr = ``;
+        for(var i = 1; i <= 75; i++ ){
+            htmlStr += `<li><img src="images/${i}.gif" data-xuhao="${i}"/></li>`;
+        }
+        faceBoxUl.innerHTML = htmlStr;
+
+        // 点击显示或者隐藏表情面板
+        var face_icon = document.querySelector(".face_icon");
+        var face_box = document.querySelector(".face_box");
+        var isShow = false;
+        face_icon.onclick = function(){
+            face_box.style.display = isShow ? "none" : "block";
+            isShow = !isShow;
+        }
+
+        // 使用事件委托给.faceBoxUl里面的每个li中的img绑定鼠标点击事件
+        faceBoxUl.onclick = function( e ){
+            if( e.target.nodeName == "IMG" ){
+                var xuhao = e.target.getAttribute("data-xuhao");
+                contentInp.value = contentInp.value + `[em_${xuhao}]`;
+                face_box.style.display = "none";
+                isShow = false;
+            }
+            
+        }
+
+        contentInp.onkeyup = function( e ){
+            if( e.keyCode ==  13 ){
+                btn_send.click();
+            }
+        }
+    </script>
+</body>
+</html>
